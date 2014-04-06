@@ -36,43 +36,41 @@ class Person < ActiveRecord::Base
   end
 
   def kids
-    if Person.where("parent1_id = ? or parent2_id = ?", self.id, self.id).count == 0
+    children = Person.where("parent1_id = ? or parent2_id = ?", self.id, self.id)
+    if children.count == 0
       nil
     else
-      Person.where("parent1_id = ? or parent2_id = ?", self.id, self.id)
+      children
     end
   end
 
   def siblings
     if parent1_id.nil? || parent2_id.nil?
       nil
-    elsif Person.where.not("id = ?", self.id).where("parent1_id = ? and parent2_id = ?", self.parent1.id, self.parent2.id).count == 0
-      nil
     else
-      Person.where.not("id = ?", self.id).where("parent1_id = ? or parent2_id = ?", self.parent1.id, self.parent2.id)
+      sibs = Person.where.not("id = ?", self.id).where("parent1_id = ? and parent2_id = ?", self.parent1.id, self.parent2.id)
+      if sibs.count == 0
+        nil
+      else
+        sibs
+      end
     end
   end
 
-  def nieces_and_nephews
+ def nieces_and_nephews
     n_array = []
     if self.siblings == nil
       nil
     else
       self.siblings.each do |sibling|
         unless sibling.kids == nil
-          sibling.kids.each do |n|
-              n_array << n
-          end
+          n_array = sibling.kids.collect { |n| n }
         end
       end
-    end
-
-    if n_array.count == 0
-      nil
-    else
       n_array
     end
   end
+
 
   def cousins
     c_array = []
@@ -81,7 +79,7 @@ class Person < ActiveRecord::Base
     else
       self.parents.each do |parent|
         unless parent.nieces_and_nephews == nil
-          parent.nieces_and_nephews.each { |c| c_array << c }
+          c_array = parent.nieces_and_nephews.collect { |c| c }
         end
       end
       c_array
