@@ -1,7 +1,7 @@
 development:
   adapter: postgresql
-  database: family_tree_development
+  database: TestRoR
 
 test:
   adapter: postgresql
-  database: family_tree_test
+  database: TestRoR
